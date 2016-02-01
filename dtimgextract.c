@@ -136,7 +136,6 @@ void dump_files_v2(FILE *fd, qca_head header, uint32_t headerat) {
 void dump_files_v3(FILE *fd, qca_head header, uint32_t headerat) {
     int i;
     dtb_entry_v3 *images = malloc(header.num * sizeof(dtb_entry_v3));
-
     printf("\nPid\tVid\tSrev\tmsm_id2\tpmic1\tpmic2\tpmic3\tpmic4\toffset\tlen\n");
     for ( i = 0; i < header.num ; i++ ){
         fread(&images[i], sizeof(dtb_entry_v3), 1, fd);
@@ -156,7 +155,7 @@ void dump_files_v3(FILE *fd, qca_head header, uint32_t headerat) {
         char dtbname[256];
         char *dtb;
         FILE *out_fd = NULL;
-        sprintf(dtbname, "%x_%x_%x_%x.dtb", images[i].platform_id, images[i].variant_id,
+        sprintf(dtbname, "dtb/%x_%x_%x_%x.dtb", images[i].platform_id, images[i].variant_id,
                                          images[i].sec_rev, images[i].msm_id2);
         printf("Writing %s(%x bytes)\n", dtbname, images[i].len);
         dtb = malloc(images[i].len);
@@ -173,11 +172,10 @@ void dump_files_v3(FILE *fd, qca_head header, uint32_t headerat) {
 void dump_files_v3_coolpad(FILE *fd, qca_head header, uint32_t headerat) {
     int i;
     dtb_entry_v3_coolpad *images = malloc(header.num * sizeof(dtb_entry_v3_coolpad));
-
     printf("\nPid\tVid\tSrev\tmsm_id2\tpmic1\tpmic2\tpmic3\tpmic4\tunk1\tunk2\tunk3\toffset\tlen\n");
     for ( i = 0; i < header.num ; i++ ){
         fread(&images[i], sizeof(dtb_entry_v3_coolpad), 1, fd);
-        printf("%x\t%x\t"
+       printf("%x\t%x\t"
                "%x\t%x\t"
                "%x\t%x\t"
                "%x\t%x\t"
@@ -189,9 +187,9 @@ void dump_files_v3_coolpad(FILE *fd, qca_head header, uint32_t headerat) {
                images[i].pmic3, images[i].pmic4,
                images[i].unknown1, images[i].unknown2,
                images[i].offset, images[i].len);
-     //  printf("  qcom,msm-id=<0x%x 0x%x>;\n",images[i].platform_id, images[i].msm_id2);
-     //  printf("  qcom,pmic-id=<0x%x 0x%x 0x%x 0x%x>;\n", images[i].pmic1, images[i].pmic2, images[i].pmic3, images[i].pmic4);
-     //  printf("  qcom,board-id=<0x%x 0x%x>;\n", images[i].variant_id, images[i].sec_rev);
+       printf("  qcom,msm-id=<0x%x 0x%x>;\n",images[i].platform_id, images[i].msm_id2);
+       printf("  qcom,pmic-id=<0x%x 0x%x 0x%x 0x%x>;\n", images[i].pmic1, images[i].pmic2, images[i].pmic3, images[i].pmic4);
+       printf("  qcom,board-id=<0x%x 0x%x>;\n", images[i].variant_id, images[i].sec_rev);
     }
     printf("\n");
     fseek(fd, headerat, SEEK_SET);
@@ -314,6 +312,15 @@ int main ( int argc, char *argv[] )
         printf("usage:%s dt.img [offset]\n", argv[0]);
         exit(0);
     }
+	printf("Update dump dtb files by cofface@cofface.com 2016.02.01\n");
+	//creat dtb file
+	if(access("dtb",0)==-1)
+    {
+        if (mkdir("dtb",0777))
+        {
+            printf("creat dtb file failed!\n");
+        }
+    }
 
     char *dtb;
     int offset = 0;
@@ -327,6 +334,6 @@ int main ( int argc, char *argv[] )
     }
     dtb=argv[1];
     splitFile(dtb, offset, usealt);
-
+	printf("dt.img had extract in dtb directory.\n");
     return EXIT_SUCCESS;
 }
